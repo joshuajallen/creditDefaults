@@ -1,0 +1,189 @@
+
+@font-face {
+  font-family: "Bliss Pro", "BlissWeb", "Trebuchet MS", "Lucida Grande", "Lucida Sans", Tahoma, sans-serif;
+  font-style: normal;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+    font-weight: 300;
+    color: #626262;
+    line-height: 1.5;
+    font-size: 2.9em;
+    margin: 0;
+    padding: 0;
+    background-color: #fffffe;
+}
+
+h1 {
+    color: #4a7e8f;
+    font-size: 3.9em;
+    line-height: 1.2;
+    margin: 0 0 .40em 0;
+    display: block;
+    font-weight: bold;
+}
+
+h2 {
+    color: #A51140;
+    font-size: 2.4em;
+    line-height: 1.2;
+    margin: 0 0 .40em 0;
+}
+
+h3 {
+    color: #A51140;
+    font-size: 2em;
+    line-height: 1.40;
+    font-weight: 500;
+    margin: 0 0 .5em 0;
+    display: block;
+}
+
+ul {
+    list-style: circle;
+    padding: 0 0 0 20px;
+    margin: 0 0 20px 0;
+}
+
+.small-code pre code {
+  font-size: 1em;
+}
+
+.midcenter {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+}
+
+.footer {
+    color: black; background: ;#2a5f87;
+    position: fixed; top: 90%;
+    text-align:center; width:100%;
+}
+
+.pinky .reveal .state-background {
+  background: #2a5f87;
+} 
+
+
+    .gdbar img {
+        width:150px;
+        height: 75px;
+        background-size: 150px 75px;
+        margin: 40px 40px;
+    }
+
+
+
+    .gdbar {
+        width:150px;
+        height: 75px;
+        background-size: 150px 75px;
+    }
+
+    slides > slide:not(.nobackground):before {
+        width:75px;
+        height: 75px;
+        background-size: 75px 75px;
+    }
+
+    
+.particular_topic_block {
+    margin: 0.2em;
+    padding: 0.2em;
+    border: 1px solid red;
+    border-radius: 5px;
+    background: #ffffe6;
+}
+
+.circle {
+  width: 10px;
+  height: 10px;
+  line-height: 500px;
+  border-radius: 10%;
+  font-size: 10px;
+  color: #fff;
+  text-align: center;
+  background: #000
+}
+
+.badge_red {
+  height: 40px;
+  width: 40px;
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 25%; /* may require vendor prefixes */
+  background: #4a7e8f;
+  color: #ededed;
+  font-weight: bold;
+  padding:0;
+  margin:0;
+}
+
+.badge_blue {
+  height: 40px;
+  width: 40px;
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 25%; /* may require vendor prefixes */
+  background: #cf395c;
+  color: #ededed;
+  font-weight: bold;
+  padding:0;
+  margin:0;
+}
+
+.badge_purple {
+  height: 40px;
+  width: 40px;
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 25%; /* may require vendor prefixes */
+  background: #b40395;
+  color: #ededed;
+  font-weight: bold;
+  padding:0;
+  margin:0;
+}
+
+.badge_teal {
+  height: 40px;
+  width: 40px;
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 25%; /* may require vendor prefixes */
+  background: #2f4f5b;
+  color: #ededed;
+  font-weight: bold;
+  padding:0;
+  margin:0;
+}
+
+li {
+  background: white;
+  display: inline-block;
+  /* inline block hack for IE 6&7 */
+  zoom: 1;
+  *display: inline;
+  padding: 4px;
+  color: #2a5f87
+}
+
+.small{
+   font-size: 45%;
+}
+
+table.rmdtable td, table th {
+    font-size: 35%;
+    padding: 2em 1em;
+    line-height: 16px;
+}
+
