@@ -1,37 +1,27 @@
 # call functions and config modules
 exec(open("./functions/functions.py").read())
 exec(open("./config/config.py").read())
+import numpy as np
 # Basics
 import pandas as pd
-import numpy as np
 import xgboost as xgb
-# Pipeline
-from sklearn.pipeline import Pipeline
-# Scaler for standardization
-from sklearn.neighbors import NearestNeighbors
-from sklearn.neighbors import KNeighborsClassifier
-import statistics as stats
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
-from sklearn.ensemble import RandomForestClassifier
-#from keras.models import Sequential
-#from keras.layers import Dense
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.ensemble import AdaBoostClassifier
-from sklearn.model_selection import RandomizedSearchCV
-from sklearn.model_selection import train_test_split
-from sklearn.base import BaseEstimator, TransformerMixin
-
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import PowerTransformer
-from sklearn.metrics import classification_report, accuracy_score, f1_score, recall_score, precision_score, confusion_matrix
-from sklearn.metrics import roc_auc_score
-from sklearn.linear_model import LogisticRegression
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline as imbpipeline
-
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, accuracy_score, recall_score, precision_score, confusion_matrix
+from sklearn.metrics import roc_auc_score
+# from keras.models import Sequential
+# from keras.layers import Dense
+from sklearn.model_selection import RandomizedSearchCV
+from sklearn.model_selection import train_test_split
+# Pipeline
+# Scaler for standardization
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import PowerTransformer
 
 pd.set_option('display.max_columns', 500)
 
@@ -100,8 +90,9 @@ class Encoder(BaseEstimator, TransformerMixin):
         return X_transformed
 
 class MultiColumnLabelEncoder:
-    def __init__(self, features):
-        self.features = features  # array of column names to encode
+    def __init__(self, features, drop='first'):
+        self.features = features
+        self.drop = drop
 
     def fit(self, X, y=None):
          return self  # not relevant here
@@ -112,17 +103,17 @@ class MultiColumnLabelEncoder:
             LabelEncoder(). If no columns specified, transforms all
             columns in X.
             '''
-            output = X.copy()
-            if self.columns is not None:
-                for col in self.columns:
-                    output[col] = LabelEncoder().fit_transform(output[col])
+            X_transformed = X.copy()
+            if self.features is not None:
+                for col in self.features:
+                    X_transformed[col] = LabelEncoder().fit_transform(X_transformed[col])
             else:
-                for colname, col in output.iteritems():
-                    output[colname] = LabelEncoder().fit_transform(col)
-            return output
+                for colname, col in X_transformed.iteritems():
+                    X_transformed[colname] = LabelEncoder().fit_transform(col)
+            return X_transformed
 
-    def fit(self, X, y=None):
-         return self.fit(X, y).transform(X)
+    def fit_transform(self,X,y=None):
+        return self.fit(X,y).transform(X)
 
 
 def calculate_roc_auc(model_pipe, X, y):
@@ -153,14 +144,6 @@ X_train, X_test, y_train, y_test = train_test_split(credit_risk.drop(columns=TAR
                                                     test_size=.2, random_state=SEED,
                                                     stratify=credit_risk[TARGET])
 
-pipe = Pipeline([
-    ('num_imputer', Imputer(NUMERICAL, method='mean')),
-    ('scaler', Scaler(NUMERICAL)),
-    ('cat_imputer', Imputer(CATEGORICAL)),
-    ('encoder', Encoder(CATEGORICAL)),
-    ('model', LogisticRegression())#xgb.XGBClassifier(objective='binary:logistic', n_estimators=10, seed=123))
-])
-
 # XGB -----------------------------------------------------------------------------------------------------------------
 pipeline = imbpipeline(steps = [['num_imputer', Imputer(NUMERICAL, method='mean')],
                                 ['scaler', NumericTransformer(NUMERICAL)],
@@ -188,7 +171,7 @@ print(f"Test ROC-AUC: {calculate_roc_auc(pipeline, X_test, y_test):.4f}")
 pipeline = imbpipeline(steps = [['num_imputer', Imputer(NUMERICAL, method='mean')],
                                 ['scaler', NumericTransformer(NUMERICAL)],
                                 ['cat_imputer', Imputer(CATEGORICAL)],
-                                ['encoder', Encoder(CATEGORICAL)],
+                                ['encoder', MultiColumnLabelEncoder(CATEGORICAL)],
                                 ['smote', SMOTE(random_state=11)],
                                 ['model', LogisticRegression()]])
 
@@ -250,7 +233,7 @@ print(f"Test ROC-AUC: {calculate_roc_auc(pipeline, X_test, y_test):.4f}")
 pipeline = imbpipeline(steps = [['num_imputer', Imputer(NUMERICAL, method='mean')],
                                 ['scaler', NumericTransformer(NUMERICAL)],
                                 ['cat_imputer', Imputer(CATEGORICAL)],
-                                ['encoder', Encoder(CATEGORICAL)],
+                                ['encoder', MultiColumnLabelEncoder(CATEGORICAL)],
                                 ['smote', SMOTE(random_state=11)],
                                 ['model', xgb.XGBClassifier(objective='binary:logistic',seed=123)]])
 
@@ -264,14 +247,39 @@ gbm_param_grid = {
 }
 
 # Perform RandomizedSearchCV
-randomized_roc_auc = RandomizedSearchCV(estimator=pipeline, n_iter=1, scoring="roc_auc", verbose=1, param_distributions=gbm_param_grid)
+randomized_roc_auc = RandomizedSearchCV(estimator=pipeline, n_iter=1, scoring="accuracy", verbose=1,
+                                        param_distributions=gbm_param_grid)
 # Fit the estimator
 randomized_roc_auc.fit(X_train, y_train)
 
 # Compute metrics
-print("Best rmse: ", np.sqrt(np.abs(randomized_roc_auc.best_score_)))
+print("Best ROC: ", np.sqrt(np.abs(randomized_roc_auc.best_score_)))
 print("Best model: ", randomized_roc_auc.best_estimator_)
 
+#randomized_roc_auc.best_params_
+
+# Create the parameter grid based on the results of random search
+pipeline = imbpipeline(steps = [['num_imputer', Imputer(NUMERICAL, method='mean')],
+                                ['scaler', NumericTransformer(NUMERICAL)],
+                                ['cat_imputer', Imputer(CATEGORICAL)],
+                                ['encoder', MultiColumnLabelEncoder(CATEGORICAL)],
+                                ['smote', SMOTE(random_state=11)],
+                                ['model', xgb.XGBClassifier(objective='binary:logistic',
+                                                            seed=123,
+                                                            n_estimator=150,
+                                                            max_depth=5,
+                                                            learning_rate=0.6)]])
+
+pipeline.fit(X_train, y_train)
+preds = pipeline.predict(X_test)
+
+print("The accuracy of XGBoost model is:", accuracy_score(y_test, preds))
+print(confusion_matrix(y_test, preds))
+print("The precision score is: ", precision_score(y_true=y_test, y_pred=preds,  average="binary"))
+print("The recall score is: ", recall_score(y_true=y_test, y_pred=preds,  average="binary"))
+
+print(f"Train ROC-AUC: {calculate_roc_auc(pipeline, X_train, y_train):.4f}")
+print(f"Test ROC-AUC: {calculate_roc_auc(pipeline, X_test, y_test):.4f}")
 
 
 X_train.head()
